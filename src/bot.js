@@ -15,7 +15,11 @@ bot.onText(/\/start/, (msg) => {
   );
 });
 
+console.log("Bot đã chạy");
+
 bot.onText(/\/xinloidalamphien/, (msg) => {
+  console.log("running");
+  console.log("Bot đã chạy here");
   bot.sendMessage(
     chatGroupId,
     `Em là  Bot của thằng Lợi devlor xin lỗi vì đã làm phiền.`,
