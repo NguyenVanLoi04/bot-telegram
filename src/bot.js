@@ -20,14 +20,17 @@ bot.onText(/\/start/, (msg) => {
 // Xử lý lệnh /cauhoi
 bot.onText(/\/cauhoi (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
-  const question = match[1]; // Captures the question after the command
+  const question = match[1];
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-  const result = await model.generateContent(question);
-  const response = result.response.text();
-
-  bot.sendMessage(chatId, `🤖 ${response}`);
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(question);
+    const response = result.response.text();
+    bot.sendMessage(chatId, `🤖 ${response}`);
+  } catch (error) {
+    console.error("Gemini error:", error.message);
+    bot.sendMessage(chatId, "❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại!");
+  }
 });
 
 // Xử lý trường hợp chỉ gõ /cauhoi mà không có câu hỏi
@@ -49,23 +52,26 @@ bot.onText(/\/xinloidalamphien/, (msg) => {
   );
 });
 
-schedule.scheduleJob("30 10 * * 1-5", () => {
+schedule.scheduleJob({ rule: "30 10 * * 1-5", tz: "Asia/Ho_Chi_Minh" }, () => {
   bot.sendMessage(
     chatGroupId,
     "🚶‍♂️ Đến giờ đứng dậy đi dạo và vươn vai rồi bro! Đừng ngồi lâu quá.\n Đã đến giờ nghỉ ngơi rồi bro ơi!",
   );
 });
 
-schedule.scheduleJob("30 15 * * 1-5", () => {
+schedule.scheduleJob({ rule: "30 15 * * 1-5", tz: "Asia/Ho_Chi_Minh" }, () => {
   bot.sendMessage(
     chatGroupId,
     "🌅 Đã 15:30 rồi! Đứng dậy làm một tách trà hoặc cà phê, và vươn vai cho tỉnh táo nào bro.",
   );
 });
 
-schedule.scheduleJob("45 17 * * 1-5", () => {
-  const now = new Date();
-  const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+schedule.scheduleJob({ rule: "45 17 * * 1-5", tz: "Asia/Ho_Chi_Minh" }, () => {
+  const dateStr = new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date());
 
   const reportTemplate = `⏰ 17:45 rồi! Bác Tô Lâm và Bác Phạm Minh Chính kêu gọi report!
 
@@ -92,7 +98,7 @@ Báo cáo tiến độ Event no code (${dateStr})
   bot.sendMessage(chatGroupId, reportTemplate);
 });
 
-schedule.scheduleJob("00 18 * * 1-5", () => {
+schedule.scheduleJob({ rule: "00 18 * * 1-5", tz: "Asia/Ho_Chi_Minh" }, () => {
   const reportTemplate =
     "🌅 Đã 6 giờ rồi! Mời các người anh em log work \n\n Cấu trúc : worklog: Xh - Nội dung công việc \n\n Thân ái ❤️";
 
