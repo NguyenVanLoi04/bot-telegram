@@ -41,6 +41,20 @@ bot.onText(/\/cauhoi$/, (msg) => {
   );
 });
 
+bot.onText(/\/templateSendCommit$/, (msg) => {
+  const template = `
+🚀 *THÔNG BÁO GỬI COMMIT* 🚀
+
+Dạ anh @congteso em gửi commit ..... ạ! 🙏✨
+
+💻 *Link commit:* 
+🎫 *Link ticket:* 
+
+───────────────────────────
+_Chúc một ngày làm việc hiệu quả!_ 🔥💪`;
+  bot.sendMessage(msg.chat.id, template, { parse_mode: "Markdown" });
+});
+
 console.log("Bot đã chạy");
 
 bot.onText(/\/xinloidalamphien/, (msg) => {
