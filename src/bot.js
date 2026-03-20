@@ -1,5 +1,6 @@
 const TelegramBot = require("node-telegram-bot-api");
 const schedule = require("node-schedule");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
 
 const token = process.env.TOKEN;
@@ -7,11 +8,33 @@ const chatId = process.env.CHAT_ID;
 const chatGroupId = process.env.CHAT_GROUP_ID;
 
 const bot = new TelegramBot(token, { polling: true });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 bot.onText(/\/start/, (msg) => {
   bot.sendMessage(
     msg.chat.id,
-    `Chào mừng ${msg.from.first_name}! Bot nhắc nhở đã sẵn sàng.`,
+    `Chào mừng ${msg.from.first_name}! Bot nhắc nhở đã sẵn sàng.\nSử dụng /cauhoi [câu hỏi] để hỏi bot bất cứ điều gì!`,
+  );
+});
+
+// Xử lý lệnh /cauhoi
+bot.onText(/\/cauhoi (.+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const question = match[1]; // Captures the question after the command
+
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const result = await model.generateContent(question);
+  const response = result.response.text();
+
+  bot.sendMessage(chatId, `🤖 ${response}`);
+});
+
+// Xử lý trường hợp chỉ gõ /cauhoi mà không có câu hỏi
+bot.onText(/\/cauhoi$/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    "Vui lòng nhập câu hỏi sau lệnh /cauhoi. Ví dụ: /cauhoi Hôm nay thời tiết thế nào?",
   );
 });
 
