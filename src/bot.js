@@ -175,7 +175,7 @@ schedule.scheduleJob({ rule: "00 18 * * 1-5", tz: "Asia/Ho_Chi_Minh" }, () => {
 });
 
 schedule.scheduleJob(
-  { rule: "0 */2 9-17 * * 1-5", tz: "Asia/Ho_Chi_Minh" },
+  { rule: "0 0 9-17/2 * * 1-5", tz: "Asia/Ho_Chi_Minh" },
   () => {
     bot.sendMessage(
       chatGroupId,
