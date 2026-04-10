@@ -12,9 +12,12 @@ const keyboards = {
         ],
         [
           { text: "🚀 Commit Template", callback_data: "action_template" },
-          { text: "🙏 Xin lỗi vì phiền", callback_data: "action_xinloi" },
+          { text: "💡 Kiến thức", callback_data: "action_kienthuc" },
         ],
-        [{ text: "🌌 Chill Lofi 🌃", callback_data: "action_lofi" }],
+        [
+          { text: "🙏 Xin lỗi vì phiền", callback_data: "action_xinloi" },
+          { text: "🌌 Chill Lofi 🌃", callback_data: "action_lofi" },
+        ],
       ],
     },
   },
@@ -46,6 +49,22 @@ async function handleAction(bot, callbackQuery) {
           chatId,
           "🤖 Để hỏi AI, vui lòng dùng lệnh: `/cauhoi [Nội dung]`",
           { parse_mode: "Markdown" },
+        );
+        break;
+
+      case "action_kienthuc":
+        await bot.sendMessage(
+          chatId,
+          "💡 <i>Đang tìm một kiến thức thú vị cho bạn...</i>",
+          { parse_mode: "HTML" },
+        );
+        const funFactPrompt =
+          "Tạo một fun fact thú vị, ngắn gọn (1-2 câu), dễ hiểu cho người Việt. Kèm theo: 1 tiêu đề ngắn hấp dẫn, 1 mô tả fun fact bằng tiếng Việt, 1 từ khóa tiếng Anh để tìm hình ảnh minh họa. Trình bày bằng các thẻ HTML <b>, <i>.";
+        const funFact = await aiService.askGemini(funFactPrompt);
+        await bot.sendMessage(
+          chatId,
+          `💡 <b>KIẾN THỨC MỚI:</b>\n\n${funFact}`,
+          { parse_mode: "HTML" },
         );
         break;
 

@@ -5,6 +5,7 @@ const memeService = require("./services/memeService");
 const { initSchedules } = require("./services/scheduleService");
 const actionService = require("./services/actionService");
 const cooldownService = require("./services/cooldownService");
+const chillService = require("./services/chillService");
 
 const bot = new TelegramBot(config.token, { polling: true });
 
@@ -54,17 +55,27 @@ bot.onText(/\/cauhoi (.+)/, async (msg, match) => {
   // Gửi thông báo đang tìm kiếm
   const waitMsg = await bot.sendMessage(
     chatId,
-    "🤖 *Đang tìm kiếm câu trả lời, đợi em xíu nhé...* ⏳",
-    { parse_mode: "Markdown" },
+    "🤖 <b>Đang tìm kiếm câu trả lời, đợi em xíu nhé...</b> ⏳",
+    { parse_mode: "HTML" },
   );
 
   try {
     const response = await aiService.askGemini(question);
     // Cập nhật lại tin nhắn chờ bằng câu trả lời (giới hạn độ dài nếu cần)
-    await bot.editMessageText(`🤖 ${response}`, {
-      chat_id: chatId,
-      message_id: waitMsg.message_id,
-    });
+    try {
+      await bot.editMessageText(`🤖 ${response}`, {
+        chat_id: chatId,
+        message_id: waitMsg.message_id,
+        parse_mode: "HTML",
+      });
+    } catch (htmlError) {
+      console.error("HTML parse error, sending plain text:", htmlError.message);
+      // Gửi lại dưới dạng text thường nếu HTML bị lỗi
+      await bot.editMessageText(`🤖 ${response}`, {
+        chat_id: chatId,
+        message_id: waitMsg.message_id,
+      });
+    }
   } catch (error) {
     await bot.editMessageText(`❌ ${error.message}`, {
       chat_id: chatId,
@@ -82,6 +93,58 @@ bot.onText(/\/cauhoi$/, (msg) => {
 });
 
 // ---------------- Lệnh Meme ----------------
+// ---------------- Lệnh Kiến Thức ----------------
+bot.onText(/\/kienthuc(?: (.+))?/, async (msg, match) => {
+  if (!cooldownService.isAllowed(bot, msg, config.aiCooldownTime)) return;
+  const chatId = msg.chat.id;
+  const topic = match[1] || "ngẫu nhiên";
+
+  const waitMsg = await bot.sendMessage(
+    chatId,
+    `💡 <i>Đang tìm kiến thức thú vị về ${topic}...</i>`,
+    { parse_mode: "HTML" },
+  );
+
+  try {
+    const prompt = `Tạo một fun fact thú vị về chủ đề "${topic}", ngắn gọn (1-2 câu), dễ hiểu cho người Việt. Kèm theo: 1 tiêu đề ngắn hấp dẫn, 1 mô tả fun fact bằng tiếng Việt, 1 từ khóa tiếng Anh để tìm hình ảnh minh họa. Trình bày bằng các thẻ HTML <b>, <i>.`;
+    const response = await aiService.askGemini(prompt);
+
+    await bot.editMessageText(`💡 <b>KIẾN THỨC MỚI:</b>\n\n${response}`, {
+      chat_id: chatId,
+      message_id: waitMsg.message_id,
+      parse_mode: "HTML",
+    });
+  } catch (error) {
+    await bot.editMessageText(`❌ ${error.message}`, {
+      chat_id: chatId,
+      message_id: waitMsg.message_id,
+    });
+  }
+});
+
+bot.onText(/\/chill(?:\s(\w+))?/, async (msg, match) => {
+  if (!cooldownService.isAllowed(bot, msg)) return;
+  const chatId = msg.chat.id;
+  const type = match[1]; // rain | night | undefined
+
+  let mode = "default";
+  if (type === "rain") mode = "rain";
+  if (type === "night") mode = "night";
+
+  try {
+    const keyword = chillService.randomItem(chillService.chillMap[mode]);
+    const img = await chillService.getImage(keyword);
+    const caption = chillService.getCaption(mode);
+
+    await bot.sendPhoto(chatId, img, { caption });
+  } catch (err) {
+    await bot.sendMessage(
+      chatId,
+      "Chill lỗi rồi 😢 thử lại nha. (Đừng quên cài UNSPLASH_KEY trong .env nhé!)",
+    );
+  }
+});
+
 bot.onText(/\/meme/, async (msg) => {
   if (!cooldownService.isAllowed(bot, msg)) return;
   const chatId = msg.chat.id;
