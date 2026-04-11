@@ -55,22 +55,28 @@ bot.onText(/\/cauhoi (.+)/, async (msg, match) => {
   // Gửi thông báo đang tìm kiếm
   const waitMsg = await bot.sendMessage(
     chatId,
-    "🤖 <b>Đang tìm kiếm câu trả lời, đợi em xíu nhé...</b> ⏳",
-    { parse_mode: "HTML" },
+    "🤖 *Đang tìm kiếm câu trả lời, đợi em xíu nhé...* ⏳",
+    { parse_mode: "Markdown" },
   );
 
   try {
     const response = await aiService.askGemini(question);
-    // Cập nhật lại tin nhắn chờ bằng câu trả lời (giới hạn độ dài nếu cần)
+
+    // Chuyển đổi cú pháp **bold** của Gemini sang *bold* của Telegram Markdown
+    const formattedResponse = response.replace(/\*\*(.*?)\*\*/g, "*$1*");
+
     try {
-      await bot.editMessageText(`🤖 ${response}`, {
+      await bot.editMessageText(`🤖 ${formattedResponse}`, {
         chat_id: chatId,
         message_id: waitMsg.message_id,
-        parse_mode: "HTML",
+        parse_mode: "Markdown",
       });
-    } catch (htmlError) {
-      console.error("HTML parse error, sending plain text:", htmlError.message);
-      // Gửi lại dưới dạng text thường nếu HTML bị lỗi
+    } catch (markdownError) {
+      console.error(
+        "Markdown parse error, sending plain text:",
+        markdownError.message,
+      );
+      // Gửi lại dưới dạng text thường nếu Markdown bị lỗi (do ký tự đặc biệt)
       await bot.editMessageText(`🤖 ${response}`, {
         chat_id: chatId,
         message_id: waitMsg.message_id,
@@ -101,18 +107,21 @@ bot.onText(/\/kienthuc(?: (.+))?/, async (msg, match) => {
 
   const waitMsg = await bot.sendMessage(
     chatId,
-    `💡 <i>Đang tìm kiến thức thú vị về ${topic}...</i>`,
-    { parse_mode: "HTML" },
+    `💡 _Đang tìm kiến thức thú vị về ${topic}..._`,
+    { parse_mode: "Markdown" },
   );
 
   try {
-    const prompt = `Tạo một fun fact thú vị về chủ đề "${topic}", ngắn gọn (1-2 câu), dễ hiểu cho người Việt. Kèm theo: 1 tiêu đề ngắn hấp dẫn, 1 mô tả fun fact bằng tiếng Việt, 1 từ khóa tiếng Anh để tìm hình ảnh minh họa. Trình bày bằng các thẻ HTML <b>, <i>.`;
+    const prompt = `Tạo một fun fact thú vị về chủ đề "${topic}", ngắn gọn (1-2 câu), dễ hiểu cho người Việt. Kèm theo: 1 tiêu đề ngắn hấp dẫn, 1 mô tả fun fact bằng tiếng Việt, 1 từ khóa tiếng Anh để tìm hình ảnh minh họa. Trình bày bằng Markdown (* cho in đậm, _ cho in nghiêng).`;
     const response = await aiService.askGemini(prompt);
 
-    await bot.editMessageText(`💡 <b>KIẾN THỨC MỚI:</b>\n\n${response}`, {
+    // Xử lý chuyển đổi ** thành * của Telegram Markdown
+    const formattedResponse = response.replace(/\*\*(.*?)\*\*/g, "*$1*");
+
+    await bot.editMessageText(`💡 *KIẾN THỨC MỚI:*\n\n${formattedResponse}`, {
       chat_id: chatId,
       message_id: waitMsg.message_id,
-      parse_mode: "HTML",
+      parse_mode: "Markdown",
     });
   } catch (error) {
     await bot.editMessageText(`❌ ${error.message}`, {
