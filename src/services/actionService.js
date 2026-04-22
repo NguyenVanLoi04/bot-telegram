@@ -18,6 +18,7 @@ const keyboards = {
           { text: "🙏 Xin lỗi vì phiền", callback_data: "action_xinloi" },
           { text: "🌌 Chill Lofi 🌃", callback_data: "action_lofi" },
         ],
+        [{ text: "⏰ Lịch nhắc nhở", callback_data: "action_schedule" }],
       ],
     },
   },
@@ -36,6 +37,30 @@ async function handleAction(bot, callbackQuery) {
 
   try {
     switch (data) {
+      case "action_schedule":
+        const scheduleMsg = `
+📅 *LỊCH NHẮC NHỞ HÀNG NGÀY*
+────────────────────────
+🌤️ *Buổi Sáng:*
+• 10:20 — Nghỉ ngơi 1
+• 10:25 — Nghỉ ngơi 2
+
+🌅 *Buổi Chiều:*
+• 15:20 — Giải lao & Meme
+• 15:25 — Thư giãn Vite
+
+📝 *Cuối Ngày:*
+• 17:45 — Báo cáo tiến độ (Daily)
+• 18:00 — Log work
+
+💧 *Sức Khỏe:*
+• Nhắc uống nước mỗi 2h (9h - 17h)
+
+────────────────────────
+_Chúc anh em Teso làm việc vui vẻ!_ 🚀
+        `.trim();
+        await bot.sendMessage(chatId, scheduleMsg, { parse_mode: "Markdown" });
+        break;
       case "action_meme":
         await bot.sendMessage(chatId, `⏳ Đang lấy meme cho ${username}...`);
         const meme = await memeService.fetchRandomMeme();

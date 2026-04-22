@@ -169,6 +169,45 @@ bot.onText(/\/meme/, async (msg) => {
   }
 });
 
+bot.onText(/\/anhhai/, async (msg) => {
+  if (!cooldownService.isAllowed(bot, msg)) return;
+  const chatId = msg.chat.id;
+
+  const waitMsg = await bot.sendMessage(
+    chatId,
+    "⏳ _Đang lục kho ảnh hài cho bro..._",
+  );
+
+  try {
+    const meme = await memeService.fetchRandomMeme("ProgrammerHumor");
+    await bot.sendPhoto(chatId, meme.url, {
+      caption: `🤣 *DEV LIFE:* ${meme.title}\n\nXem xong thì quay lại code tiếp nhé! 🚀`,
+      parse_mode: "Markdown",
+    });
+    bot.deleteMessage(chatId, waitMsg.message_id);
+  } catch (error) {
+    bot.editMessageText(`❌ Không lấy được ảnh hài rồi: ${error.message}`, {
+      chat_id: chatId,
+      message_id: waitMsg.message_id,
+    });
+  }
+});
+
+// Phản hồi khi người dùng gửi ảnh
+bot.on("photo", (msg) => {
+  const chatId = msg.chat.id;
+  const responses = [
+    "📸 Ảnh đẹp đấy bro, nhưng nhìn giống Bug quá! 🐛",
+    "🤔 Gửi ảnh này là có ý gì? Định hối lộ Bot à? 😂",
+    "🎨 Nghệ thuật đấy, nhưng UI này có vẻ hơi khó code nhé.",
+    "🚀 Ảnh này mà đưa vào Vite thì chạy mượt phải biết!",
+    "🫡 Đã nhận được tài liệu mật của Teso!",
+  ];
+  const randomResponse =
+    responses[Math.floor(Math.random() * responses.length)];
+  bot.sendMessage(chatId, randomResponse);
+});
+
 // ---------------- Lắng nghe các Hành động (Nút bấm) ----------------
 bot.on("callback_query", (query) => {
   if (!cooldownService.isAllowed(bot, query)) return;
