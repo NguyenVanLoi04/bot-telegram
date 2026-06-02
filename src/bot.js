@@ -6,6 +6,8 @@ const { initSchedules } = require("./services/scheduleService");
 const actionService = require("./services/actionService");
 const cooldownService = require("./services/cooldownService");
 const chillService = require("./services/chillService");
+const linkService = require("./services/linkService");
+const randomService = require("./services/randomService");
 
 const bot = new TelegramBot(config.token, { polling: true });
 
@@ -44,6 +46,38 @@ bot.onText(/\/xinloidalamphien/, (msg) => {
     "🤖 Em là *Bot của thằng Lợi devlor*, xin lỗi vì đã làm phiền mọi người ạ! 🙏✨",
     { parse_mode: "Markdown" },
   );
+});
+
+bot.onText(/\/(docs|links)/, (msg) => {
+  if (!cooldownService.isAllowed(bot, msg)) return;
+  bot.sendMessage(
+    msg.chat.id,
+    "🔗 *Danh sách Tài liệu & Link Nội bộ của dự án:*\n\n_Bấm vào các nút bên dưới để truy cập nhanh nhé!_",
+    {
+      parse_mode: "Markdown",
+      ...linkService.getLinksKeyboard(),
+    },
+  );
+});
+
+bot.onText(/\/(quay|trasua)/, async (msg) => {
+  if (!cooldownService.isAllowed(bot, msg)) return;
+  const chatId = msg.chat.id;
+
+  // Gửi hiệu ứng máy quay xổ số (Slot Machine)
+  await bot.sendDice(chatId, { emoji: '🎰' });
+  
+  // Đợi 3 giây cho hiệu ứng chạy xong rồi mới công bố kết quả
+  setTimeout(() => {
+    const member = randomService.getRandomMember();
+    const scenario = randomService.getRandomScenario();
+    
+    bot.sendMessage(
+      chatId,
+      `🎰 *KẾT QUẢ VÒNG QUAY NHÂN PHẨM:*\n\nXin chúc mừng ${member} ${scenario}`,
+      { parse_mode: "Markdown" }
+    );
+  }, 3000);
 });
 
 // ---------------- Lệnh AI ----------------

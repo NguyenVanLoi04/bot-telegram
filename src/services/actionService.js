@@ -18,7 +18,13 @@ const keyboards = {
           { text: "🙏 Xin lỗi vì phiền", callback_data: "action_xinloi" },
           { text: "🌌 Chill Lofi 🌃", callback_data: "action_lofi" },
         ],
-        [{ text: "⏰ Lịch nhắc nhở", callback_data: "action_schedule" }],
+        [
+          { text: "⏰ Lịch nhắc nhở", callback_data: "action_schedule" },
+          { text: "🔗 Link Nội Bộ", callback_data: "action_links" }
+        ],
+        [
+          { text: "🎲 Vòng Quay Trà Sữa", callback_data: "action_quay" }
+        ],
       ],
     },
   },
@@ -122,6 +128,32 @@ Dạ anh @congteso em gửi commit ..... ạ! 🙏✨
           chatId,
           "🤖 Dạ em là bot của thằng Lợi, xin lỗi vì đã làm phiền ạ! 🙏✨",
         );
+        break;
+
+      case "action_links":
+        const linkService = require("./linkService");
+        await bot.sendMessage(
+          chatId,
+          "🔗 *Danh sách Tài liệu & Link Nội bộ:*\n_Bấm vào các nút bên dưới để truy cập nhanh nhé!_",
+          {
+            parse_mode: "Markdown",
+            ...linkService.getLinksKeyboard(),
+          }
+        );
+        break;
+
+      case "action_quay":
+        const randomService = require("./randomService");
+        await bot.sendDice(chatId, { emoji: '🎰' });
+        setTimeout(() => {
+          const member = randomService.getRandomMember();
+          const scenario = randomService.getRandomScenario();
+          bot.sendMessage(
+            chatId,
+            `🎰 *KẾT QUẢ VÒNG QUAY NHÂN PHẨM:*\n\nXin chúc mừng ${member} ${scenario}`,
+            { parse_mode: "Markdown" }
+          );
+        }, 3000);
         break;
 
       default:
